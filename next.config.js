@@ -6,7 +6,7 @@ const withPWA = withPWAInit({
   skipWaiting: true,
 });
 
-import "./src/env.js";
+
 
 /** @type {import("next").NextConfig} */
 const config = {};
