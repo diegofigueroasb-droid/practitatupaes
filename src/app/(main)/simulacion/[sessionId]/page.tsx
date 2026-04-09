@@ -1,4 +1,4 @@
-'use strict';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -99,7 +99,7 @@ export default function SimulationPage({ params }: { params: { sessionId: string
 
       {phase === 'feedback' && (
         <div className="pt-4">
-          <Button className="w-full h-12" onClick={advance}>
+          <Button className="w-full h-12" onClick={advance} disabled={completeMutation.isPending}>
             {currentIndex + 1 < questions.length ? 'Siguiente' : 'Ver Resultados'}
           </Button>
         </div>
