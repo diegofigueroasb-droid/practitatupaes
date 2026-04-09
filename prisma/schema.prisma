@@ -1,21 +1,67 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  image         String?
+  sessions      Session[]
+  errors        PendingError[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
 
-    @@index([name])
+model Session {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject         String
+  mode            String
+  questionCount   Int
+  correctCount    Int
+  incorrectCount  Int
+  estimatedScore  Int
+  answers         Json
+  questions       Json
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model PendingError {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId          String
+  question            Json
+  selectedAlternative String
+  correctAlternative  String
+  reviewCount         Int       @default(1)
+  resolved            Boolean   @default(false)
+  lastSeenAt          DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+model Question {
+  id                       String   @id @default(cuid())
+  subject                  String
+  prompt                   String
+  alternatives             Json
+  correctAlternative       String
+  explanationsByAlternative Json
+  createdAt                DateTime @default(now())
+
+  @@index([subject])
 }
