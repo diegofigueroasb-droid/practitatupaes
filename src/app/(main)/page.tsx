@@ -29,13 +29,14 @@ export default function HomePage() {
   const [subject, setSubject] = useState<string>(SUBJECTS[0]);
   const [mode, setMode] = useState<'Ensayo oficial' | 'Repaso errores'>('Ensayo oficial');
   const [count, setCount] = useState<number>(10);
+  const [error, setError] = useState<string | null>(null);
 
   const createSession = api.session.create.useMutation({
     onSuccess: (session) => {
       router.push(`/simulacion/${session.id}`);
     },
-    onError: (error) => {
-      alert(error.message);
+    onError: (err) => {
+      setError(err.message);
     },
   });
 
@@ -115,6 +116,7 @@ export default function HomePage() {
         >
           {createSession.isPending ? 'Preparando...' : 'Iniciar Simulación'}
         </Button>
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
       </div>
     </div>
   );
