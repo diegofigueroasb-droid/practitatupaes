@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { api } from '~/trpc/react';
 import { QuestionCard } from '~/components/simulation/question-card';
 import { AlternativeButton } from '~/components/simulation/alternative-button';
@@ -11,9 +11,10 @@ import type { AnswerOption, QuestionItem } from '~/types/domain';
 
 const ALTERNATIVES: AnswerOption[] = ['A', 'B', 'C', 'D', 'E'];
 
-export default function SimulationPage({ params }: { params: { sessionId: string } }) {
+export default function SimulationPage({ params }: { params: Promise<{ sessionId: string }> }) {
+  const { sessionId } = use(params);
   const router = useRouter();
-  const { data: session, isLoading } = api.session.getById.useQuery({ id: params.sessionId });
+  const { data: session, isLoading } = api.session.getById.useQuery({ id: sessionId });
   const completeMutation = api.session.complete.useMutation({
     onSuccess: () => router.push('/historial'),
   });
