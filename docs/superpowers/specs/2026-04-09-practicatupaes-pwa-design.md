@@ -1,14 +1,14 @@
 # PracticaTuPAES - PWA Design Specification
 
 **Fecha:** 2026-04-09  
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Status:** Draft
 
 ---
 
 ## 1. Concepto & Visión
 
-**PracticaTuPAES** es una PWA de preparación para la PAES (Prueba de Acceso a la Educación Superior) de Chile. A diferencia de una app nativa, funciona en cualquier navegador y dispositivo sin instalación, con soporte offline parcial.
+**PracticaTuPAES** es una PWA de preparación para la PAES (Prueba de Acceso a la Educación Superior) de Chile. A diferencia de una app nativa, funciona en cualquier navegador y dispositivo sin instalación.
 
 **Personalidad:** Moderna, educativa, confiable. Transmite profesionalismo y apoyo al estudiante en su preparación.
 
@@ -22,9 +22,8 @@
 | Estilos | Tailwind CSS + shadcn/ui |
 | Backend | tRPC + Next.js API Routes |
 | ORM | Prisma |
-| Database | PostgreSQL (Neon) |
+| Database | PostgreSQL (Supabase) |
 | Auth | Clerk |
-| AI | Anthropic API (Claude) |
 | Deployment | Vercel |
 | PWA | next-pwa + Web Manifest |
 
@@ -35,17 +34,17 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Frontend (Next.js 15)               │
-│  App Router → Server Components + Client Components    │
+│  App Router → Server Components + Client Components     │
 └──────────────────────┬────────────────────────────────┘
                        │ tRPC (end-to-end typesafe)
 ┌──────────────────────┼────────────────────────────────┐
-│                Backend (Next.js API)                  │
-│  tRPC Routers: sessions, questions, errors, progress  │
+│                Backend (Next.js API)                   │
+│  tRPC Routers: sessions, questions, errors, progress    │
 └──────────────────────┬────────────────────────────────┘
                        │
 ┌──────────────────────┼────────────────────────────────┐
-│         Database (Neon PostgreSQL + Prisma)           │
-│  Tables: User, Session, PendingError                   │
+│           Database (Supabase PostgreSQL + Prisma)      │
+│  Tables: User, Session, PendingError, Question         │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -56,38 +55,37 @@
 ```
 practicatupaes/
 ├── prisma/
-│   └── schema.prisma
+│   ├── schema.prisma
+│   └── seed.ts              # Seed preguntas banco oficial
 ├── public/
 │   ├── icons/
 │   └── manifest.json
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (auth)/            # Rutas auth (Clerk)
+│   ├── app/                  # Next.js App Router
+│   │   ├── (auth)/
 │   │   │   ├── sign-in/
 │   │   │   └── sign-up/
-│   │   ├── (main)/            # Rutas protegidas
+│   │   ├── (main)/
 │   │   │   ├── layout.tsx
 │   │   │   ├── page.tsx       # Home
 │   │   │   ├── simulacion/
-│   │   │   │   └── [sessionId]/  # Sesión activa
+│   │   │   │   └── [sessionId]/
 │   │   │   ├── historial/
 │   │   │   ├── progreso/
 │   │   │   └── perfil/
 │   │   ├── api/
 │   │   │   └── trpc/[trpc]/
-│   │   ├── layout.tsx
-│   │   └── page.tsx
+│   │   └── layout.tsx
 │   ├── components/
-│   │   ├── ui/                # shadcn/ui base
-│   │   ├── simulation/        # QuestionCard, Alternatives
-│   │   ├── charts/            # Progress charts
-│   │   └── layout/            # Navbar, Footer
+│   │   ├── ui/
+│   │   ├── simulation/
+│   │   ├── charts/
+│   │   └── layout/
 │   ├── lib/
-│   │   ├── utils.ts
-│   │   └── anthropic.ts
+│   │   └── utils.ts
 │   ├── server/
 │   │   ├── api/
-│   │   │   ├── routers/       # tRPC routers
+│   │   │   ├── routers/
 │   │   │   └── trpc.ts
 │   │   └── db.ts
 │   └── styles/
@@ -141,6 +139,18 @@ model PendingError {
 
   @@unique([userId, questionId])
 }
+
+model Question {
+  id                       String   @id @default(cuid())
+  subject                  String
+  prompt                   String
+  alternatives             Json     // [{key: "A", text: "..."}]
+  correctAlternative       String
+  explanationsByAlternative Json   // {A: "...", B: "...", ...}
+  createdAt                DateTime @default(now())
+
+  @@index([subject])
+}
 ```
 
 ---
@@ -155,7 +165,7 @@ type Subject =
   | 'Historia' 
   | 'Ciencias';
 
-type StudyMode = 'IA' | 'Ensayo oficial' | 'Repaso errores';
+type StudyMode = 'Ensayo oficial' | 'Repaso errores';
 
 type AnswerOption = 'A' | 'B' | 'C' | 'D' | 'E';
 
@@ -166,7 +176,6 @@ interface QuestionItem {
   alternatives: Array<{ key: AnswerOption; text: string }>;
   correctAlternative: AnswerOption;
   explanationsByAlternative: Record<AnswerOption, string>;
-  modeSource: StudyMode;
 }
 
 interface SessionAnswer {
@@ -207,9 +216,8 @@ interface SessionRecord {
 
 | Procedure | Input | Output | Descripción |
 |-----------|-------|--------|-------------|
-| `getForMode` | `{subject, mode, count}` | `QuestionItem[]` | Carga preguntas según modo |
-| `getOfficial` | `{subject, count}` | `QuestionItem[]` | Banco oficial |
-| `getFromAI` | `{subject, count}` | `QuestionItem[]` | Genera con Anthropic |
+| `getRandom` | `{subject, count}` | `QuestionItem[]` | Preguntas aleatorias del banco |
+| `getBySubject` | `{subject}` | `QuestionItem[]` | Todas las preguntas de una materia |
 
 ### errors router
 
@@ -233,9 +241,8 @@ interface SessionRecord {
 1. User → Home (selecciona materia/modo/cantidad)
         ↓
 2. tRPC: sessions.create()
-   - IA: questions.getFromAI()
-   - Oficial: questions.getOfficial()
-   - Errores: errors.getPending()
+   - Oficial: questions.getRandom(subject, count)
+   - Errores: errors.getPending(subject, count)
         ↓
 3. Render: /simulacion/[sessionId]
    - Client state: currentIndex, selectedAnswer, phase
@@ -251,7 +258,7 @@ interface SessionRecord {
    - Calcula score
    - Upsert PendingErrors
         ↓
-7. Redirect → /historial (o /resultado inline)
+7. Redirect → /historial
 ```
 
 ---
@@ -280,9 +287,9 @@ interface SessionRecord {
 
 ```css
 --space-1: 0.5rem;   /* 8px */
---space-2: 1rem;     /* 16px */
---space-3: 1.5rem;   /* 24px */
---space-4: 2rem;     /* 32px */
+--space-2: 1rem;      /* 16px */
+--space-3: 1.5rem;    /* 24px */
+--space-4: 2rem;      /* 32px */
 ```
 
 ### Componentes UI
@@ -305,7 +312,7 @@ interface SessionRecord {
 {
   "name": "PracticaTuPAES",
   "short_name": "PracticaPAES",
-  "description": "Prepárate para la PAES con preguntas de IA",
+  "description": "Prepárate para la PAES con preguntas oficiales DEMRE",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAFAFA",
@@ -319,7 +326,23 @@ interface SessionRecord {
 
 ---
 
-## 11. Autenticación (Clerk)
+## 11. Banco de Preguntas
+
+Preguntas del banco local migradas del proyecto original:
+
+| Materia | Archivo Fuente | Descripción |
+|---------|----------------|-------------|
+| Comprensión Lectora | `competencia-lectora.ts` | 65 preguntas |
+| Matemática M1 | `matematica-m1.ts` | Problemas cotidianos, álgebra |
+| Matemática M2 | `matematica-m2.ts` | Funciones, trigonometría, logaritmos |
+| Historia | `historia.ts` | Procesos históricos Chile/Mundo |
+| Ciencias | `ciencias.ts` | Física, Química, Biología |
+
+Seed script: `prisma/seed.ts` importa preguntas a tabla `Question`.
+
+---
+
+## 12. Autenticación (Clerk)
 
 - Sign-in/Sign-up pages via Clerk hosted
 - Middleware protege rutas `/historial`, `/progreso`, `/perfil`, `/simulacion`
@@ -328,22 +351,23 @@ interface SessionRecord {
 
 ---
 
-## 12. Deploy (Vercel)
+## 13. Deploy (Vercel)
 
 1. Conectar repo GitHub
 2. Configurar environment variables:
-   - `DATABASE_URL` (Neon PostgreSQL)
+   - `DATABASE_URL` (Supabase PostgreSQL connection string)
    - `CLERK_PUBLISHABLE_KEY`
    - `CLERK_SECRET_KEY`
-   - `ANTHROPIC_API_KEY`
 3. Deploy automático en push a main
+4. Post-deploy: `prisma db seed` para populate preguntas
 
 ---
 
-## 13. TODOs
+## 14. TODOs
 
 - [ ] Crear repo GitHub
 - [ ] Inicializar T3 Stack
+- [ ] Migrar preguntas del banco local (seed)
 - [ ] Configurar Prisma schema
 - [ ] Configurar Clerk
 - [ ] Implementar routers tRPC
