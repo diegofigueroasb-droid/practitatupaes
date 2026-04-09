@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export const questionRouter = createTRPCRouter({
   getRandom: publicProcedure
@@ -13,7 +22,7 @@ export const questionRouter = createTRPCRouter({
       const questions = await ctx.db.question.findMany({
         where: { subject: input.subject },
       });
-      const shuffled = questions.sort(() => Math.random() - 0.5);
+      const shuffled = shuffleArray(questions);
       return shuffled.slice(0, input.count);
     }),
 
@@ -25,7 +34,7 @@ export const questionRouter = createTRPCRouter({
       });
     }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.question.findMany();
   }),
 });
