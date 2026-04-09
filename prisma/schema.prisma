@@ -41,8 +41,8 @@ model PendingError {
   id                  String    @id @default(cuid())
   userId              String
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questionId          String
   question            Json
+  questionHash        String
   selectedAlternative String
   correctAlternative  String
   reviewCount         Int       @default(1)
@@ -50,7 +50,7 @@ model PendingError {
   lastSeenAt          DateTime  @default(now())
   createdAt           DateTime  @default(now())
 
-  @@unique([userId, questionId])
+  @@unique([userId, questionHash])
   @@index([userId])
 }
 
