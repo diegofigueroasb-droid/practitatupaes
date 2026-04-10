@@ -1,6 +1,12 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, contentSecurityPolicy } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+export default clerkMiddleware({
+  contentSecurityPolicy: {
+    defaultSrc: "'self'",
+    scriptSrc: "'self' 'unsafe-inline' 'unsafe-eval'",
+    styleSrc: "'self' 'unsafe-inline'",
+  },
+});
 
 export const config = {
   matcher: [
