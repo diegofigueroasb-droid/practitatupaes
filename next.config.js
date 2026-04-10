@@ -10,7 +10,7 @@ const config = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: "script-src 'self' 'unsafe-eval' https://clerk.\#{Clerk.instanceDomain}\# js.globalstg.clerk.accounts.dev;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.your-domain.com https://js.clerk.com; connect-src 'self' https://clerk.your-domain.com; img-src 'self' https://img.clerk.com data:; style-src 'self' 'unsafe-inline';",
           },
         ],
       },
