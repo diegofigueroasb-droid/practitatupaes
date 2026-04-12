@@ -2,12 +2,12 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 
+const guestUserId = "guest-user";
+
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const { userId } = await auth();
-  return { db, auth: { userId: userId ?? "" }, ...opts };
+  return { db, auth: { userId: guestUserId }, ...opts };
 };
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
@@ -47,7 +47,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
 export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
-  if (!ctx.auth.userId) {
+  if (!ctx.auth.userId || ctx.auth.userId === guestUserId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({ ctx: { ...ctx, auth: ctx.auth } });

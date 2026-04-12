@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
-import { api } from '~/trpc/react';
+import { matematicaM2Questions } from '~/data/paes-questions/matematica-m2';
+import { matematicaM1Questions } from '~/data/paes-questions/matematica-m1';
+import { historiaQuestions } from '~/data/paes-questions/historia';
+import { cienciasBiologiaQuestions } from '~/data/paes-questions/ciencias-biologia';
+import { cienciasQuimicaQuestions } from '~/data/paes-questions/ciencias-quimica';
+import { cienciasFisicaQuestions } from '~/data/paes-questions/ciencias-fisica';
+import { competenciaLectoraQuestions } from '~/data/paes-questions/competencia-lectora';
+import type { QuestionItem } from '~/types/domain';
 
 const SUBJECTS = [
   'Comprension Lectora',
@@ -14,92 +20,75 @@ const SUBJECTS = [
   'Ciencias',
 ] as const;
 
-const MODE_LABELS = {
-  'Ensayo oficial': { label: 'Ensayo Oficial', desc: 'Preguntas del banco oficial DEMRE' },
-  'Repaso errores': { label: 'Repaso Errores', desc: 'Revisa tus respuestas incorrectas' },
-} as const;
+const QUESTION_COUNTS = [10, 20, 35, 65];
 
-const QUESTION_COUNTS = {
-  'Ensayo oficial': [10, 20, 35, 65] as const,
-  'Repaso errores': [3, 5, 10] as const,
-} as const;
+const QUESTIONS: Record<string, QuestionItem[]> = {
+  'Matematica M1': matematicaM1Questions,
+  'Matematica M2': matematicaM2Questions,
+  'Historia': historiaQuestions,
+  'Ciencias': [
+    ...cienciasBiologiaQuestions,
+    ...cienciasQuimicaQuestions,
+    ...cienciasFisicaQuestions,
+  ],
+  'Comprension Lectora': competenciaLectoraQuestions,
+};
 
 export default function HomePage() {
   const router = useRouter();
-  const [subject, setSubject] = useState<string>(SUBJECTS[0]);
-  const [mode, setMode] = useState<'Ensayo oficial' | 'Repaso errores'>('Ensayo oficial');
+  const [subject, setSubject] = useState<string>('Matematica M1');
   const [count, setCount] = useState<number>(10);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createSession = api.session.create.useMutation({
-    onSuccess: (session) => {
-      router.push(`/simulacion/${session.id}`);
-    },
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
+  const getCount = (s: string) => (QUESTIONS[s] || []).length;
 
   const handleStart = () => {
-    createSession.mutate({ subject, mode, questionCount: count });
+    if (getCount(subject) === 0) {
+      setError(`No hay preguntas para ${subject}. Próximamente.`);
+      return;
+    }
+    setLoading(true);
+    const qs = QUESTIONS[subject] || [];
+    const shuffled = [...qs].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, count);
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const sessionData = { id: sessionId, subject, questionCount: count, questions: selected, currentIndex: 0, answers: [], startedAt: new Date().toISOString() };
+    localStorage.setItem(`session_${sessionId}`, JSON.stringify(sessionData));
+    router.push(`/simulacion/${sessionId}`);
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-text">Nueva Simulación</h1>
-        <p className="text-text-muted mt-2">
-          Elige la materia, el modo y cuántas preguntas quieres responder.
-        </p>
+    <div className="space-y-6 md:space-y-8 px-4 md:px-6">
+      <div className="animate-fade-in-up">
+        <h1 className="text-2xl md:text-3xl font-bold text-text">Nueva Simulación</h1>
+        <p className="text-text-muted mt-2 text-sm md:text-base">Elige la materia y cuántas preguntas quieres responder.</p>
       </div>
-
-      <div>
+      <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
         <h2 className="text-sm font-semibold text-text uppercase tracking-wide mb-3">Materia</h2>
         <div className="flex flex-wrap gap-2">
-          {SUBJECTS.map((s) => (
-            <Button
-              key={s}
-              variant={subject === s ? 'default' : 'outline'}
-              size="sm"
+          {SUBJECTS.map((s, i) => (
+            <Button 
+              key={s} 
+              variant={subject === s ? 'default' : 'outline'} 
+              size="sm" 
+              className="text-xs sm:text-sm transition-all duration-200"
               onClick={() => setSubject(s)}
             >
-              {s}
+              {s} ({getCount(s)})
             </Button>
           ))}
         </div>
       </div>
-
-      <div>
-        <h2 className="text-sm font-semibold text-text uppercase tracking-wide mb-3">Modo</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {(Object.keys(MODE_LABELS) as Array<keyof typeof MODE_LABELS>).map((m) => (
-            <Card
-              key={m}
-              className={`p-4 cursor-pointer transition-colors ${
-                mode === m ? 'border-primary bg-primary/5' : ''
-              }`}
-              onClick={() => {
-                setMode(m);
-                setCount(QUESTION_COUNTS[m][0]);
-              }}
-            >
-              <h3 className={`font-semibold ${mode === m ? 'text-primary' : ''}`}>
-                {MODE_LABELS[m].label}
-              </h3>
-              <p className="text-sm text-text-muted mt-1">{MODE_LABELS[m].desc}</p>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <div>
+      <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <h2 className="text-sm font-semibold text-text uppercase tracking-wide mb-3">Preguntas</h2>
         <div className="flex gap-2">
-          {QUESTION_COUNTS[mode].map((n) => (
-            <Button
-              key={n}
-              variant={count === n ? 'default' : 'outline'}
-              size="sm"
+          {QUESTION_COUNTS.map((n) => (
+            <Button 
+              key={n} 
+              variant={count === n ? 'default' : 'outline'} 
+              size="sm" 
+              className="min-w-[44px] min-h-[44px] transition-all duration-200"
               onClick={() => setCount(n)}
             >
               {n}
@@ -107,16 +96,20 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-
-      <div className="pt-4">
-        <Button
-          className="w-full h-14 text-lg"
-          onClick={handleStart}
-          disabled={createSession.isPending}
+      <div className="pt-2 md:pt-4 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+        <Button 
+          className="w-full h-12 md:h-14 text-base md:text-lg transition-all duration-200" 
+          onClick={handleStart} 
+          disabled={loading}
         >
-          {createSession.isPending ? 'Preparando...' : 'Iniciar Simulación'}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Cargando...
+            </span>
+          ) : 'Iniciar Simulación'}
         </Button>
-        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
+        {error && <p className="text-red-500 text-center mt-3 animate-fade-in">{error}</p>}
       </div>
     </div>
   );

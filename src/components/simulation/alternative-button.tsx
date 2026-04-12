@@ -14,10 +14,10 @@ interface AlternativeButtonProps {
 }
 
 const stateStyles: Record<AlternativeState, string> = {
-  idle: 'border-border hover:border-primary hover:bg-surface-alt',
-  selected: 'border-primary bg-primary/10',
-  correct: 'border-success bg-success/10',
-  wrong: 'border-error bg-error/10',
+  idle: 'border-border hover:border-primary hover:bg-surface-alt hover:scale-[1.01] cursor-pointer',
+  selected: 'border-primary bg-primary/10 ring-2 ring-primary/30',
+  correct: 'border-success bg-success/10 ring-2 ring-success/30 animate-pulse',
+  wrong: 'border-error bg-error/10 ring-2 ring-error/30 animate-shake',
   dimmed: 'border-border opacity-40',
 };
 
@@ -42,14 +42,14 @@ export function AlternativeButton({
       onClick={onPress}
       disabled={disabled}
       className={cn(
-        'w-full flex items-start gap-3 p-4 rounded-lg border-2 transition-all text-left',
-        'min-h-[48px] disabled:cursor-not-allowed',
+        'w-full flex items-start gap-3 p-3 md:p-4 rounded-lg border-2 transition-all text-left',
+        'min-h-[44px] md:min-h-[48px] disabled:cursor-not-allowed',
         stateStyles[state]
       )}
     >
       <span
         className={cn(
-          'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm',
+          'flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-sm',
           state === 'correct' && 'bg-success text-white',
           state === 'wrong' && 'bg-error text-white',
           state !== 'correct' && state !== 'wrong' && 'bg-surface-alt text-text'
@@ -57,7 +57,7 @@ export function AlternativeButton({
       >
         {optionLabels[option]}
       </span>
-      <span className="flex-1 text-text">{text}</span>
+      <span className="flex-1 text-sm md:text-base text-text">{text}</span>
     </button>
   );
 }

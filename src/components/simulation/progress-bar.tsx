@@ -15,9 +15,9 @@ export function ProgressBar({ current, total, className }: ProgressBarProps) {
         <span>
           Pregunta {current} de {total}
         </span>
-        <span>{Math.round(percentage)}%</span>
+        <span className="font-medium">{Math.round(percentage)}%</span>
       </div>
-      <div className="h-2 bg-surface-alt rounded-full overflow-hidden">
+      <div className="h-2 md:h-3 bg-surface-alt rounded-full overflow-hidden">
         <div
           className="h-full bg-primary transition-all duration-300 rounded-full"
           style={{ width: `${percentage}%` }}

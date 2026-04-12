@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+
+const guestUserId = "guest-user";
 
 export const progressRouter = createTRPCRouter({
-  getStats: protectedProcedure.query(async ({ ctx }) => {
+  getStats: publicProcedure.query(async ({ ctx }) => {
     const sessions = await ctx.db.session.findMany({
-      where: { userId: ctx.auth.userId },
+      where: { userId: guestUserId },
       orderBy: { createdAt: "desc" },
     });
 
@@ -21,7 +23,7 @@ export const progressRouter = createTRPCRouter({
 
     const bySubject = await ctx.db.session.groupBy({
       by: ["subject"],
-      where: { userId: ctx.auth.userId },
+      where: { userId: guestUserId },
       _count: true,
       _avg: { estimatedScore: true },
     });
@@ -39,7 +41,7 @@ export const progressRouter = createTRPCRouter({
     };
   }),
 
-  getTrend: protectedProcedure
+  getTrend: publicProcedure
     .input(
       z.object({
         subject: z.string().optional(),
@@ -49,7 +51,7 @@ export const progressRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const sessions = await ctx.db.session.findMany({
         where: {
-          userId: ctx.auth.userId,
+          userId: guestUserId,
           ...(input.subject && { subject: input.subject }),
         },
         orderBy: { createdAt: "desc" },

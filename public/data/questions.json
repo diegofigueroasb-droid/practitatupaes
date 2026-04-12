@@ -1,0 +1,21 @@
+{
+  "Matematica M1": [],
+  "Matematica M2": [
+    {"id": "m2-01", "subject": "Matematica M2", "prompt": "Si log₂(x) = 5, ¿cuál es x?", "alternatives": [{"key": "A", "text": "10"}, {"key": "B", "text": "25"}, {"key": "C", "text": "32"}, {"key": "D", "text": "64"}], "correctAlternative": "C", "explanationsByAlternative": {"C": "Correcto: 2^5 = 32"}},
+    {"id": "m2-02", "subject": "Matematica M2", "prompt": "¿Cuánto es √144?", "alternatives": [{"key": "A", "text": "10"}, {"key": "B", "text": "11"}, {"key": "C", "text": "12"}, {"key": "D", "text": "13"}], "correctAlternative": "C", "explanationsByAlternative": {"C": "Correcto"}},
+    {"id": "m2-03", "subject": "Matematica M2", "prompt": "Si f(x) = 2x + 1 y f(3) = 7, ¿cuál es la pendiente?", "alternatives": [{"key": "A", "text": "1"}, {"key": "B", "text": "2"}, {"key": "C", "text": "3"}, {"key": "D", "text": "4"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto"}},
+    {"id": "m2-04", "subject": "Matematica M2", "prompt": "En una progresión geométrica, a1=2 y r=3. ¿Cuánto es a4?", "alternatives": [{"key": "A", "text": "18"}, {"key": "B", "text": "27"}, {"key": "C", "text": "54"}, {"key": "D", "text": "81"}], "correctAlternative": "C", "explanationsByAlternative": {"C": "Calcula: 2 × 3^3 = 54"}},
+    {"id": "m2-05", "subject": "Matematica M2", "prompt": "¿Cuál es el dominio de f(x) = √(x-3)?", "alternatives": [{"key": "A", "text": "x ≥ 3"}, {"key": "B", "text": "x > 3"}, {"key": "C", "text": "x ≤ 3"}, {"key": "D", "text": "x < 3"}], "correctAlternative": "A", "explanationsByAlternative": {"A": "Correcto:inside the radical must be non-negative"}}
+  ],
+  "Historia": [
+    {"id": "hist-01", "subject": "Historia", "prompt": "¿En qué año fue el estallido social en Chile?", "alternatives": [{"key": "A", "text": "2018"}, {"key": "B", "text": "2019"}, {"key": "C", "text": "2020"}, {"key": "D", "text": "2021"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto: Fue en octubre de 2019"}},
+    {"id": "hist-02", "subject": "Historia", "prompt": "¿Qué presidente implementó laLey de Inclusion salarial?", "alternatives": [{"key": "A", "text": "Michelle Bachelet"}, {"key": "B", "text": "Sebastián Piñera"}, {"key": "C", "text": "Eduardo Frei"}, {"key": "D", "text": "Patricio Aylwin"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto: Fue en 2018"}},
+    {"id": "hist-03", "subject": "Historia", "prompt": "¿Cuándo se inmue la Constitución de 1980?", "alternatives": [{"key": "A", "text": "1970"}, {"key": "B", "text": "1973"}, {"key": "C", "text": "1980"}, {"key": "D", "text": "1989"}], "correctAlternative": "C", "explanationsByAlternative": {"C": "Correcto"}}
+  ],
+  "Ciencias": [
+    {"id": "cien-01", "subject": "Ciencias", "prompt": "¿Cuál es la fórmula del agua?", "alternatives": [{"key": "A", "text": "CO₂"}, {"key": "B", "text": "H₂O"}, {"key": "C", "text": "NaCl"}, {"key": "D", "text": "O₂"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto"}},
+    {"id": "cien-02", "subject": "Ciencias", "prompt": "¿Qué orgánelo produce energía en la célula?", "alternatives": [{"key": "A", "text": "Núcleo"}, {"key": "B", "text": "Mitocondria"}, {"key": "C", "text": "Ribosoma"}, {"key": "D", "text": "Lisosoma"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto: Produce ATP"}},
+    {"id": "cien-03", "subject": "Ciencias", "prompt": "¿Cuál es el gas más abundante en la atmósfera?", "alternatives": [{"key": "A", "text": "Oxígeno"}, {"key": "B", "text": "Nitrógeno"}, {"key": "C", "text": "Argón"}, {"key": "D", "text": "Dióxido de carbono"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto: ~78%"}},
+    {"id": "cien-04", "subject": "Ciencias", "prompt": "¿Qué tipo de enlace une los átomos de agua?", "alternatives": [{"key": "A", "text": "Iónico"}, {"key": "B", "text": "Covalente"}, {"key": "C", "text": "Metálico"}, {"key": "D", "text": "Hidrógeno"}], "correctAlternative": "B", "explanationsByAlternative": {"B": "Correcto: Enlace covalente polar"}}
+  ]
+}
